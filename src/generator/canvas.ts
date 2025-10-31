@@ -1,20 +1,17 @@
-
 const generate = (): VideoFrame | null => {
-    const canvas = document.createElement('canvas');
-    // draw something on the canvas
-    const ctx = canvas.getContext('2d');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
-    if (!ctx) {
-        return null;
-    }
+  if (!ctx) {
+    return null;
+  }
 
-    ctx.fillStyle = 'red';
-    ctx.fillRect(0, 0, 100, 100);
-    
-    const videoFrame = new VideoFrame(canvas, { timestamp: 0 });
+  ctx.fillStyle = 'red';
+  ctx.fillRect(0, 0, 100, 100);
 
-    return videoFrame;
-}
+  const videoFrame = new VideoFrame(canvas, {timestamp: 0});
 
+  return videoFrame;
+};
 
 export default generate;
