@@ -5,7 +5,6 @@ import {Configuration, HtmlRspackPlugin, ProvidePlugin} from '@rspack/core';
 const devConfig: Configuration = {
   extends: './rspack.base.conf.ts',
   mode: 'development',
-  target: ['web', 'es5'],
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.css'],
     fallback: {
@@ -19,8 +18,7 @@ const devConfig: Configuration = {
   },
   devtool: 'cheap-module-source-map',
   experiments: {
-    css: false,
-    outputModule: true
+    css: false
   },
   output: {
     clean: true,
@@ -66,13 +64,6 @@ const devConfig: Configuration = {
         type: 'asset/resource'
       }
     ]
-  },
-  stats: {
-    errorDetails: true,
-    logging: 'error'
-  },
-  infrastructureLogging: {
-    level: 'error'
   }
 };
 

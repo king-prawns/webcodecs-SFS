@@ -6,11 +6,11 @@ import {Configuration} from '@rspack/core';
 (process as any).noDeprecation = true;
 
 const baseConfig: Configuration = {
+  target: ['es2022'],
   resolve: {
     tsConfig: {
       configFile: path.resolve(__dirname, '../typescript/tsconfig.json')
-    },
-    extensions: ['.ts', '.tsx']
+    }
   },
   experiments: {
     outputModule: true
@@ -20,6 +20,13 @@ const baseConfig: Configuration = {
     hints: false,
     maxEntrypointSize: 512000,
     maxAssetSize: 512000
+  },
+  stats: {
+    errorDetails: true,
+    logging: 'error'
+  },
+  infrastructureLogging: {
+    level: 'error'
   }
 };
 

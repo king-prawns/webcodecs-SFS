@@ -14,6 +14,7 @@ compiler.hooks.done.tap('done', () => {
 });
 
 log(chalk.cyan('Starting rspack dev server...'));
+
 const options: DevServer = {
   client: {
     overlay: false
