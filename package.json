@@ -16,7 +16,10 @@
   "homepage": "https://github.com/king-prawns/webcodecs-SFS#readme",
   "scripts": {
     "prepare": "ts-patch install -s && husky",
-    "pre:commit": "lint-staged"
+    "pre:commit": "lint-staged",
+    "lint": "eslint --config ./config/eslint/eslint.config.mjs \"./src/**/*.ts\"",
+    "prettier": "prettier --config ./config/prettier/.prettierrc --list-different \"src/**/*.ts\" --ignore-path ../config/prettier/.prettierignore",
+    "typecheck": "tsc -p ./config/typescript/tsconfig.json --noEmit"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
