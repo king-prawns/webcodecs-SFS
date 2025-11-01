@@ -17,5 +17,5 @@
       "@generator/*": ["./src/generator/*"]
     }
   },
-  "include": ["../../src/**/*"]
+  "include": ["../../src/**/*", "../../sandbox/**/*"]
 }
