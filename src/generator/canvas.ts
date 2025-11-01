@@ -1,6 +1,6 @@
 const generate = (): VideoFrame | null => {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const canvas: HTMLCanvasElement = document.createElement('canvas');
+  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
 
   if (!ctx) {
     return null;
@@ -9,7 +9,7 @@ const generate = (): VideoFrame | null => {
   ctx.fillStyle = 'red';
   ctx.fillRect(0, 0, 100, 100);
 
-  const videoFrame = new VideoFrame(canvas, {timestamp: 0});
+  const videoFrame: VideoFrame = new VideoFrame(canvas, {timestamp: 0});
 
   return videoFrame;
 };

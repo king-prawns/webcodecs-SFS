@@ -2,10 +2,8 @@
   "name": "webcodecs",
   "version": "1.0.0",
   "description": "Video processing with WebCodecs",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/king-prawns/webcodecs-SFS.git"
@@ -16,10 +14,23 @@
     "url": "https://github.com/king-prawns/webcodecs-SFS/issues"
   },
   "homepage": "https://github.com/king-prawns/webcodecs-SFS#readme",
+  "scripts": {
+    "prepare": "ts-patch install -s && husky",
+    "pre:commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write --config ./config/prettier/.prettierrc",
+      "eslint --config ./config/eslint/eslint.config.mjs --no-error-on-unmatched-pattern --fix"
+    ]
+  },
   "devDependencies": {
     "eslint": "9.39.0",
     "eslint-plugin-import": "2.32.0",
+    "husky": "9.1.7",
+    "lint-staged": "16.2.6",
     "prettier": "3.6.2",
+    "ts-patch": "3.3.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.46.2"
   }
