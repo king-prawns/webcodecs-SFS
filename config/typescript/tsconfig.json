@@ -16,5 +16,6 @@
     "paths": {
       "@generator/*": ["./src/generator/*"]
     }
-  }
+  },
+  "include": ["../../src/**/*"]
 }
