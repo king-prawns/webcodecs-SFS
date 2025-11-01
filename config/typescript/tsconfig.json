@@ -11,8 +11,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
+    "outDir": "../../dist",
     "baseUrl": "../../",
-    "outDir": "./dist",
     "paths": {
       "@generator/*": ["./src/generator/*"]
     }

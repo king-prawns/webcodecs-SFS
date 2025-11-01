@@ -2,7 +2,7 @@
   "name": "webcodecs",
   "version": "1.0.0",
   "description": "Video processing with WebCodecs",
-  "main": "dist/index.js",
+  "main": "dist/webcodecs.js",
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
@@ -20,7 +20,10 @@
     "lint": "eslint --config ./config/eslint/eslint.config.mjs \"./src/**/*.ts\"",
     "prettier": "prettier --config ./config/prettier/.prettierrc --list-different \"src/**/*.ts\" --ignore-path ../config/prettier/.prettierignore",
     "typecheck": "tsc -p ./config/typescript/tsconfig.json --noEmit",
-    "dev": "ts-node-dev --project ./config/typescript/tsconfig.json ./config/rspack/dev.ts"
+    "dev": "ts-node-dev --project ./config/typescript/tsconfig.json ./config/rspack/dev.ts",
+    "build:package": "ts-node --project ./config/typescript/tsconfig.prod.json ./config/rspack/prod.ts && tsc -p ./config/typescript/tsconfig.prod.json",
+    "build:package:analyze": "ts-node --project ./config/typescript/tsconfig.prod.json ./config/rspack/prod.ts --analyze && tsc -p ./config/typescript/tsconfig.prod.json",
+    "build:sandbox": "ts-node --project ./config/typescript/tsconfig.json ./config/rspack/dev.ts --prod"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -29,6 +32,7 @@
     ]
   },
   "devDependencies": {
+    "@rsdoctor/rspack-plugin": "1.3.7",
     "@rspack/core": "1.6.0",
     "@rspack/dev-server": "1.1.4",
     "@types/node": "24.9.2",
