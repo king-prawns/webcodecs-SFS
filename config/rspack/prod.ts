@@ -1,3 +1,4 @@
+import {RsdoctorRspackPlugin} from '@rsdoctor/rspack-plugin';
 import {Compiler, rspack} from '@rspack/core';
 import chalk from 'chalk';
 
@@ -6,6 +7,13 @@ import prodConfig from './rspack.prod.conf';
 const {log} = console;
 
 log(chalk.cyan('Building...'));
+
+const isAnalyze: boolean = process.argv.includes('--analyze');
+
+if (isAnalyze) {
+  log(chalk.cyan('Enabling RsdoctorRspackPlugin'));
+  prodConfig.plugins = [...(prodConfig.plugins || []), new RsdoctorRspackPlugin()];
+}
 
 const compiler: Compiler = rspack(prodConfig);
 

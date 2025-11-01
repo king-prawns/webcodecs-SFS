@@ -11,10 +11,6 @@ const isProd: boolean = process.argv.includes('--prod');
 
 const compiler: Compiler = rspack(devConfig);
 
-compiler.hooks.done.tap('done', () => {
-  log(chalk.cyan('Rspack finished'));
-});
-
 if (isProd) {
   log(chalk.cyan('Building to sandbox/dist folder...'));
   compiler.run((err: Error | null) => {

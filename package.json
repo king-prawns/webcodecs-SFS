@@ -21,7 +21,8 @@
     "prettier": "prettier --config ./config/prettier/.prettierrc --list-different \"src/**/*.ts\" --ignore-path ../config/prettier/.prettierignore",
     "typecheck": "tsc -p ./config/typescript/tsconfig.json --noEmit",
     "dev": "ts-node-dev --project ./config/typescript/tsconfig.json ./config/rspack/dev.ts",
-    "build:package": "ts-node --project ./config/typescript/tsconfig.prod.json ./config/rspack/prod.package.ts && tsc -p ./config/typescript/tsconfig.prod.json",
+    "build:package": "ts-node --project ./config/typescript/tsconfig.prod.json ./config/rspack/prod.ts && tsc -p ./config/typescript/tsconfig.prod.json",
+    "build:package:analyze": "ts-node --project ./config/typescript/tsconfig.prod.json ./config/rspack/prod.ts --analyze && tsc -p ./config/typescript/tsconfig.prod.json",
     "build:sandbox": "ts-node --project ./config/typescript/tsconfig.json ./config/rspack/dev.ts --prod"
   },
   "lint-staged": {
