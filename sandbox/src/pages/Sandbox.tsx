@@ -1,5 +1,5 @@
 import './Sandbox.css';
-import React from 'react';
+import React, {JSX} from 'react';
 
 type IProps = Record<string, never>;
 type IState = Record<string, never>;
