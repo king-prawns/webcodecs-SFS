@@ -8,7 +8,7 @@ const prodConfig: Configuration = {
   mode: 'production',
   resolve: {
     tsConfig: {
-      configFile: path.resolve(__dirname, '../typescript/tsconfig.prod.package.json')
+      configFile: path.resolve(__dirname, '../typescript/tsconfig.prod.json')
     },
     extensions: ['.ts']
   },

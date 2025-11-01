@@ -1,13 +1,13 @@
 import {Compiler, rspack} from '@rspack/core';
 import chalk from 'chalk';
 
-import packageProdConfig from './rspack.prod.package.conf';
+import prodConfig from './rspack.prod.conf';
 
 const {log} = console;
 
 log(chalk.cyan('Building...'));
 
-const compiler: Compiler = rspack(packageProdConfig);
+const compiler: Compiler = rspack(prodConfig);
 
 compiler.hooks.done.tap('done', () => {
   log(chalk.green('Build completed 🎉'));
