@@ -75,7 +75,6 @@ export default typescriptEslint.config([
         'error',
         {
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling'],
-
           pathGroups: [
             {
               pattern: '@shared/**',
@@ -83,14 +82,11 @@ export default typescriptEslint.config([
               position: 'after'
             }
           ],
-
           'newlines-between': 'always',
-
           alphabetize: {
             order: 'asc',
             caseInsensitive: true
           },
-
           pathGroupsExcludedImportTypes: []
         }
       ]
