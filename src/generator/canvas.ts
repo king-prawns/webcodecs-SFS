@@ -1,9 +1,9 @@
-const generate = (): VideoFrame | null => {
+const generate = (): Promise<VideoFrame | null> => {
   const canvas: HTMLCanvasElement = document.createElement('canvas');
   const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
 
   if (!ctx) {
-    return null;
+    return Promise.resolve(null);
   }
 
   ctx.fillStyle = 'red';
@@ -11,7 +11,7 @@ const generate = (): VideoFrame | null => {
 
   const videoFrame: VideoFrame = new VideoFrame(canvas, {timestamp: 0});
 
-  return videoFrame;
+  return Promise.resolve(videoFrame);
 };
 
 export default generate;
