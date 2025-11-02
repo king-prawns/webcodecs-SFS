@@ -1,4 +1,7 @@
 const generate = (): Promise<VideoFrame | null> => {
+  // eslint-disable-next-line no-console
+  console.log('Generating frame from canvas');
+
   const canvas: HTMLCanvasElement = document.createElement('canvas');
   const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
 

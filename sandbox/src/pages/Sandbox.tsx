@@ -4,26 +4,40 @@ import React, {JSX} from 'react';
 import {WebCodecs} from '../../../src';
 
 type IProps = Record<string, never>;
-type IState = Record<string, never>;
+type IState = {
+  status: string;
+};
 
 class Sandbox extends React.Component<IProps, IState> {
   private webCodecs: WebCodecs;
 
   constructor(props: IProps) {
     super(props);
+
     this.webCodecs = new WebCodecs();
+
+    this.state = {
+      status: 'Not started'
+    };
   }
 
   render(): JSX.Element {
-    const sum: number = this.webCodecs.sum(1, 2);
-
     return (
       <div className="sandbox">
         <h1>Sandbox</h1>
-        <p>The sum is: {sum}</p>
+        <button disabled={this.state.status !== 'Not started'} onClick={this.handleClick}>
+          START
+        </button>
+        <p>Status: {this.state.status}</p>
       </div>
     );
   }
+
+  private handleClick = async (): Promise<void> => {
+    this.setState({status: 'Doing'});
+    await this.webCodecs.do();
+    this.setState({status: 'Done'});
+  };
 }
 
 export default Sandbox;

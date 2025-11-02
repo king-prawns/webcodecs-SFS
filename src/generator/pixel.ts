@@ -1,4 +1,7 @@
 const generate = (): Promise<VideoFrame | null> => {
+  // eslint-disable-next-line no-console
+  console.log('Generating frame from pixel');
+
   const pixelSize: number = 4;
   const init: VideoFrameBufferInit = {
     timestamp: 0,
