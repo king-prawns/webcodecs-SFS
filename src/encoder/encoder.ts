@@ -1,50 +1,46 @@
 import IEncodedChunk from '@interfaces/IEncodedChunk';
 
 class Encoder {
+  private _encoder: VideoEncoder | null = null;
   private _encodedChunk: IEncodedChunk | null = null;
-
-  constructor() {}
 
   public get encodedChunk(): IEncodedChunk | null {
     return this._encodedChunk;
   }
 
-  public getEncoder =
-    async (/* handleChunk: EncodedVideoChunkOutputCallback */): Promise<VideoEncoder | null> => {
-      let encoder: VideoEncoder | null = null;
-
-      const init: VideoEncoderInit = {
-        output: this.handleChunk,
-        error: (e: DOMException) => {
-          // eslint-disable-next-line no-console
-          console.log('Encoder error: ', e.message);
-        }
-      };
-
-      const config: VideoEncoderConfig = {
-        codec: 'vp8',
-        width: 640,
-        height: 480,
-        bitrate: 2_000_000, // 2 Mbps
-        framerate: 30
-      };
-
-      const {supported} = await VideoEncoder.isConfigSupported(config);
-      if (supported) {
-        encoder = new VideoEncoder(init);
-        encoder.configure(config);
-      } else {
+  public async init(): Promise<void> {
+    const init: VideoEncoderInit = {
+      output: this.handleChunk,
+      error: (e: DOMException) => {
         // eslint-disable-next-line no-console
-        console.log('Configuration not supported', config);
+        console.log('Encoder error: ', e.message);
       }
-
-      return encoder;
     };
 
-  encode = (encoder: VideoEncoder, videoFrame: VideoFrame): void => {
+    const config: VideoEncoderConfig = {
+      codec: 'vp8',
+      width: 640,
+      height: 480,
+      bitrate: 2_000_000, // 2 Mbps
+      framerate: 30
+    };
+
+    const {supported} = await VideoEncoder.isConfigSupported(config);
+    if (supported) {
+      this._encoder = new VideoEncoder(init);
+      this._encoder.configure(config);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('Configuration not supported', config);
+    }
+  }
+
+  public encode = (videoFrame: VideoFrame): void => {
+    if (!this._encoder) return;
+
     let frameCounter: number = 0;
 
-    if (encoder.encodeQueueSize > 2) {
+    if (this._encoder.encodeQueueSize > 2) {
       // Too many frames in flight, encoder is overwhelmed, let's drop this frame.
       // eslint-disable-next-line no-console
       console.log('Dropping frame t: ', videoFrame.timestamp);
@@ -52,7 +48,7 @@ class Encoder {
     } else {
       frameCounter++;
       const keyFrame: boolean = frameCounter % 150 === 0;
-      encoder.encode(videoFrame, {keyFrame});
+      this._encoder.encode(videoFrame, {keyFrame});
       videoFrame.close();
     }
   };

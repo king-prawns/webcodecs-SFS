@@ -1,71 +1,86 @@
-const pendingFrames: Array<VideoFrame> = [];
-let underflow: boolean = true;
-let baseTime: number = 0;
+import IEncodedChunk from '@interfaces/IEncodedChunk';
 
-const handleFrame: VideoFrameOutputCallback = (frame: VideoFrame) => {
-  pendingFrames.push(frame);
-  if (underflow) setTimeout(renderFrame, 0);
-};
+class Decoder {
+  private _decoder: VideoDecoder | null = null;
 
-const calculateTimeUntilNextFrame = (timestamp: number): number => {
-  if (baseTime === 0) baseTime = performance.now();
-  const mediaTime: number = performance.now() - baseTime;
+  private _pendingFrames: Array<VideoFrame> = [];
+  private _underflow: boolean = true;
+  private _baseTime: number = 0;
 
-  return Math.max(0, timestamp / 1000 - mediaTime);
-};
+  public init = async (): Promise<void> => {
+    const init: VideoDecoderInit = {
+      output: this.handleFrame,
+      error: (e: DOMException) => {
+        // eslint-disable-next-line no-console
+        console.log('Decoder error: ', e.message);
+      }
+    };
 
-const renderFrame = async (): Promise<void> => {
-  const canvas: HTMLCanvasElement | null = document.getElementById('canvas') as HTMLCanvasElement;
-  if (!canvas) return;
-  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
-  if (!ctx) return;
+    const config: VideoDecoderConfig = {
+      codec: 'vp8',
+      codedWidth: 640,
+      codedHeight: 480
+    };
 
-  underflow = pendingFrames.length === 0;
-  if (underflow) return;
-
-  const frame: VideoFrame | undefined = pendingFrames.shift();
-  if (!frame) return;
-
-  // Based on the frame's timestamp calculate how much of real time waiting
-  // is needed before showing the next frame.
-  const timeUntilNextFrame: number = calculateTimeUntilNextFrame(frame.timestamp);
-  await new Promise((r: (value: unknown) => void) => {
-    setTimeout(r, timeUntilNextFrame);
-  });
-  ctx.drawImage(frame, 0, 0);
-  frame.close();
-
-  // Immediately schedule rendering of the next frame
-  setTimeout(renderFrame, 0);
-};
-
-const decoder = async (/* handleFrame: VideoFrameOutputCallback */): Promise<VideoDecoder | null> => {
-  let decoder: VideoDecoder | null = null;
-
-  const init: VideoDecoderInit = {
-    output: handleFrame,
-    error: (e: DOMException) => {
+    const {supported} = await VideoDecoder.isConfigSupported(config);
+    if (supported) {
+      this._decoder = new VideoDecoder(init);
+      this._decoder.configure(config);
+    } else {
       // eslint-disable-next-line no-console
-      console.log('Decoder error: ', e.message);
+      console.log('Configuration not supported', config);
     }
   };
 
-  const config: VideoDecoderConfig = {
-    codec: 'vp8',
-    codedWidth: 640,
-    codedHeight: 480
+  public decode = async (encodedChunk: IEncodedChunk): Promise<void> => {
+    if (!this._decoder) return;
+
+    const chunk: EncodedVideoChunk = new EncodedVideoChunk({
+      timestamp: encodedChunk.timestamp,
+      type: encodedChunk.key ? 'key' : 'delta',
+      data: new Uint8Array(encodedChunk.data)
+    });
+    this._decoder.decode(chunk);
+
+    await this._decoder.flush();
   };
 
-  const {supported} = await VideoDecoder.isConfigSupported(config);
-  if (supported) {
-    decoder = new VideoDecoder(init);
-    decoder.configure(config);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log('Configuration not supported', config);
-  }
+  private calculateTimeUntilNextFrame = (timestamp: number): number => {
+    if (this._baseTime === 0) this._baseTime = performance.now();
+    const mediaTime: number = performance.now() - this._baseTime;
 
-  return decoder;
-};
+    return Math.max(0, timestamp / 1000 - mediaTime);
+  };
 
-export default decoder;
+  private handleFrame: VideoFrameOutputCallback = (frame: VideoFrame) => {
+    this._pendingFrames.push(frame);
+    if (this._underflow) setTimeout(this.renderFrame, 0);
+  };
+
+  private renderFrame = async (): Promise<void> => {
+    const canvas: HTMLCanvasElement | null = document.getElementById('canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
+    if (!ctx) return;
+
+    this._underflow = this._pendingFrames.length === 0;
+    if (this._underflow) return;
+
+    const frame: VideoFrame | undefined = this._pendingFrames.shift();
+    if (!frame) return;
+
+    // Based on the frame's timestamp calculate how much of real time waiting
+    // is needed before showing the next frame.
+    const timeUntilNextFrame: number = this.calculateTimeUntilNextFrame(frame.timestamp);
+    await new Promise((r: (value: unknown) => void) => {
+      setTimeout(r, timeUntilNextFrame);
+    });
+    ctx.drawImage(frame, 0, 0);
+    frame.close();
+
+    // Immediately schedule rendering of the next frame
+    setTimeout(this.renderFrame, 0);
+  };
+}
+
+export default Decoder;
