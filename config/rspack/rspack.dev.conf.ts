@@ -6,6 +6,9 @@ const devConfig: Configuration = {
   extends: './rspack.base.conf.ts',
   mode: 'development',
   resolve: {
+    tsConfig: {
+      configFile: path.resolve(__dirname, '../typescript/tsconfig.json')
+    },
     extensions: ['.ts', '.tsx', '.js', '.json', '.css'],
     fallback: {
       process: require.resolve('process/browser', {

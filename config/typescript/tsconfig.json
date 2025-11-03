@@ -14,7 +14,10 @@
     "outDir": "../../dist",
     "baseUrl": "../../",
     "paths": {
-      "@generator/*": ["./src/generator/*"]
+      "@generator/*": ["./src/generator/*"],
+      "@decoder/*": ["./src/decoder/*"],
+      "@encoder/*": ["./src/encoder/*"],
+      "@interfaces/*": ["./src/interfaces/*"]
     }
   },
   "include": ["../../src/**/*", "../../sandbox/**/*"]
