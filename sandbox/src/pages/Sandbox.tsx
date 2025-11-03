@@ -29,6 +29,7 @@ class Sandbox extends React.Component<IProps, IState> {
           START
         </button>
         <p>Status: {this.state.status}</p>
+        <canvas id="canvas"></canvas>
       </div>
     );
   }

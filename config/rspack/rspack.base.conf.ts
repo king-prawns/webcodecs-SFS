@@ -1,5 +1,3 @@
-import path from 'path';
-
 import {Configuration} from '@rspack/core';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7,11 +5,6 @@ import {Configuration} from '@rspack/core';
 
 const baseConfig: Configuration = {
   target: ['es2022'],
-  resolve: {
-    tsConfig: {
-      configFile: path.resolve(__dirname, '../typescript/tsconfig.json')
-    }
-  },
   experiments: {
     outputModule: true
   },
