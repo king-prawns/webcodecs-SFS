@@ -6,6 +6,7 @@ class Decoder {
   #pendingFrames: Array<VideoFrame> = [];
   #underflow: boolean = true;
   #baseTime: number = 0;
+  #baseTimestamp: number = 0;
 
   init = async (): Promise<void> => {
     const init: VideoDecoderInit = {
@@ -32,7 +33,7 @@ class Decoder {
     }
   };
 
-  decode = async (encodedChunk: IEncodedChunk): Promise<void> => {
+  decode = (encodedChunk: IEncodedChunk): void => {
     if (!this.#decoder) return;
 
     const chunk: EncodedVideoChunk = new EncodedVideoChunk({
@@ -41,15 +42,23 @@ class Decoder {
       data: new Uint8Array(encodedChunk.data)
     });
     this.#decoder.decode(chunk);
+  };
+
+  flush = async (): Promise<void> => {
+    if (!this.#decoder) return;
 
     await this.#decoder.flush();
   };
 
   #calculateTimeUntilNextFrame = (timestamp: number): number => {
-    if (this.#baseTime === 0) this.#baseTime = performance.now();
-    const mediaTime: number = performance.now() - this.#baseTime;
+    if (this.#baseTime === 0) {
+      this.#baseTime = performance.now();
+      this.#baseTimestamp = timestamp;
+    }
+    const mediaTime: number = performance.now() - this.#baseTime; // real time
+    const frameTime: number = (timestamp - this.#baseTimestamp) / 1000; // media time
 
-    return Math.max(0, timestamp / 1000 - mediaTime);
+    return Math.max(0, frameTime - mediaTime); // time to wait in real time before showing the next frame
   };
 
   #handleFrame: VideoFrameOutputCallback = (frame: VideoFrame) => {

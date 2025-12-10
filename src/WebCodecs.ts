@@ -1,47 +1,39 @@
 import Decoder from '@decoder/decoder';
 import Encoder from '@encoder/encoder';
-import generate from '@generator/canvas';
-// import generate from '@generator/camera';
+// import generate from '@generator/canvas';
+import generate from '@generator/camera';
 // import generate from '@generator/pixel';
 import IEncodedChunk from '@interfaces/IEncodedChunk';
 
 class WebCodecs {
-  do = async (): Promise<void> => {
-    const encodedChunk: IEncodedChunk | null = await this.#encode();
-    if (!encodedChunk) return;
-    await this.#decode(encodedChunk);
-  };
+  #abortController: AbortController | null = null;
 
-  #encode = async (): Promise<IEncodedChunk | null> => {
+  start = async (): Promise<void> => {
     const encoder: Encoder = new Encoder();
-    await encoder.init();
+    const decoder: Decoder = new Decoder();
 
-    const videoFrame: VideoFrame | null = await generate();
-    if (videoFrame) {
+    await encoder.init();
+    await decoder.init();
+
+    this.#abortController = new AbortController();
+
+    // Whenever a chunk is ready, decode it
+    encoder.onChunk((chunk: IEncodedChunk) => {
+      decoder.decode(chunk);
+    });
+
+    // Encode all frames from generator
+    for await (const videoFrame of generate(this.#abortController.signal)) {
       encoder.encode(videoFrame);
     }
 
+    // Ensure all pending operations are completed
     await encoder.flush();
-
-    if (encoder.encodedChunk) {
-      // eslint-disable-next-line no-console
-      console.log('Encoded chunk available');
-
-      return encoder.encodedChunk;
-    } else {
-      // eslint-disable-next-line no-console
-      console.log('No encoded chunk');
-
-      return null;
-    }
+    await decoder.flush();
   };
 
-  #decode = async (encodedChunk: IEncodedChunk): Promise<void> => {
-    const decoder: Decoder = new Decoder();
-    await decoder.init();
-    if (decoder) {
-      decoder.decode(encodedChunk);
-    }
+  stop = (): void => {
+    this.#abortController?.abort();
   };
 }
 

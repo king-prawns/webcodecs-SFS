@@ -2,11 +2,13 @@ import IEncodedChunk from '@interfaces/IEncodedChunk';
 
 class Encoder {
   #encoder: VideoEncoder | null = null;
-  #encodedChunk: IEncodedChunk | null = null;
 
-  get encodedChunk(): IEncodedChunk | null {
-    return this.#encodedChunk;
-  }
+  #onChunkCallback: ((chunk: IEncodedChunk) => void) | null = null;
+  #frameCounter: number = 0;
+
+  onChunk = (callback: (chunk: IEncodedChunk) => void): void => {
+    this.#onChunkCallback = callback;
+  };
 
   init = async (): Promise<void> => {
     const init: VideoEncoderInit = {
@@ -38,18 +40,17 @@ class Encoder {
   encode = (videoFrame: VideoFrame): void => {
     if (!this.#encoder) return;
 
-    let frameCounter: number = 0;
-
     if (this.#encoder.encodeQueueSize > 2) {
       // Too many frames in flight, encoder is overwhelmed, let's drop this frame.
       // eslint-disable-next-line no-console
       console.log('Dropping frame t: ', videoFrame.timestamp);
       videoFrame.close();
     } else {
-      frameCounter++;
-      const keyFrame: boolean = frameCounter % 150 === 0;
+      // First frame (0) must be a keyframe, then every 150 frames
+      const keyFrame: boolean = this.#frameCounter % 150 === 0;
       this.#encoder.encode(videoFrame, {keyFrame});
       videoFrame.close();
+      this.#frameCounter++;
     }
   };
 
@@ -78,14 +79,16 @@ class Encoder {
     const chunkData: Uint8Array = new Uint8Array(chunk.byteLength);
     chunk.copyTo(chunkData);
 
-    this.#encodedChunk = {
+    const encodedChunk: IEncodedChunk = {
       timestamp: chunk.timestamp,
       key: chunk.type === 'key',
       data: chunkData
     };
 
     // eslint-disable-next-line no-console
-    console.log('Encoded chunk', this.#encodedChunk);
+    console.log('Encoded chunk', encodedChunk);
+
+    this.#onChunkCallback?.(encodedChunk);
   };
 }
 

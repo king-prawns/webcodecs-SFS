@@ -1,26 +1,23 @@
-const generate = async (): Promise<VideoFrame | null> => {
+async function* generate(signal?: AbortSignal): AsyncGenerator<VideoFrame> {
   // eslint-disable-next-line no-console
-  console.log('Generating frame from camera');
-
-  let videoFrame: VideoFrame | null = null;
+  console.log('Generating frames from camera');
 
   const stream: MediaStream = await navigator.mediaDevices.getUserMedia({video: true});
-  const track: MediaStreamTrack = stream.getTracks()[0];
-
+  const track: MediaStreamTrack = stream.getVideoTracks()[0];
   const trackProcessor: MediaStreamTrackProcessor = new MediaStreamTrackProcessor(track);
-
   const reader: ReadableStreamDefaultReader<VideoFrame> = trackProcessor.readable.getReader();
 
-  // while (true) {
-  const result: ReadableStreamReadResult<VideoFrame> = await reader.read();
-  if (result.value) {
-    videoFrame = result.value;
+  try {
+    while (true) {
+      if (signal?.aborted) break;
+      // eslint-disable-next-line no-await-in-loop
+      const result: ReadableStreamReadResult<VideoFrame> = await reader.read();
+      if (result.done) break;
+      yield result.value;
+    }
+  } finally {
+    track.stop();
   }
-  // }
-
-  track.stop();
-
-  return videoFrame;
-};
+}
 
 export default generate;

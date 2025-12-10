@@ -17,7 +17,7 @@ class Sandbox extends React.Component<IProps, IState> {
     this.#webCodecs = new WebCodecs();
 
     this.state = {
-      status: 'Not started'
+      status: 'Idle'
     };
   }
 
@@ -25,19 +25,26 @@ class Sandbox extends React.Component<IProps, IState> {
     return (
       <div className="sandbox">
         <h1>Sandbox</h1>
-        <button disabled={this.state.status !== 'Not started'} onClick={this.#handleClick}>
+        <button disabled={this.state.status !== 'Idle'} onClick={this.#handleStart}>
           START
         </button>
+        <button disabled={this.state.status !== 'Running'} onClick={this.#handleStop}>
+          STOP
+        </button>
         <p>Status: {this.state.status}</p>
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas" width="640" height="480"></canvas>
       </div>
     );
   }
 
-  #handleClick = async (): Promise<void> => {
-    this.setState({status: 'Doing'});
-    await this.#webCodecs.do();
-    this.setState({status: 'Done'});
+  #handleStart = async (): Promise<void> => {
+    this.setState({status: 'Running'});
+    await this.#webCodecs.start();
+  };
+
+  #handleStop = (): void => {
+    this.#webCodecs.stop();
+    this.setState({status: 'Idle'});
   };
 }
 
