@@ -1,16 +1,18 @@
 import IEncodedChunk from '@interfaces/IEncodedChunk';
 
 class Encoder {
-  private _encoder: VideoEncoder | null = null;
-  private _encodedChunk: IEncodedChunk | null = null;
+  #encoder: VideoEncoder | null = null;
 
-  public get encodedChunk(): IEncodedChunk | null {
-    return this._encodedChunk;
-  }
+  #onChunkCallback: ((chunk: IEncodedChunk) => void) | null = null;
+  #frameCounter: number = 0;
 
-  public async init(): Promise<void> {
+  onChunk = (callback: (chunk: IEncodedChunk) => void): void => {
+    this.#onChunkCallback = callback;
+  };
+
+  init = async (): Promise<void> => {
     const init: VideoEncoderInit = {
-      output: this.handleChunk,
+      output: this.#handleChunk,
       error: (e: DOMException) => {
         // eslint-disable-next-line no-console
         console.log('Encoder error: ', e.message);
@@ -27,34 +29,40 @@ class Encoder {
 
     const {supported} = await VideoEncoder.isConfigSupported(config);
     if (supported) {
-      this._encoder = new VideoEncoder(init);
-      this._encoder.configure(config);
+      this.#encoder = new VideoEncoder(init);
+      this.#encoder.configure(config);
     } else {
       // eslint-disable-next-line no-console
       console.log('Configuration not supported', config);
     }
-  }
+  };
 
-  public encode = (videoFrame: VideoFrame): void => {
-    if (!this._encoder) return;
+  encode = (videoFrame: VideoFrame): void => {
+    if (!this.#encoder) return;
 
-    let frameCounter: number = 0;
-
-    if (this._encoder.encodeQueueSize > 2) {
+    if (this.#encoder.encodeQueueSize > 2) {
       // Too many frames in flight, encoder is overwhelmed, let's drop this frame.
       // eslint-disable-next-line no-console
       console.log('Dropping frame t: ', videoFrame.timestamp);
       videoFrame.close();
     } else {
-      frameCounter++;
-      const keyFrame: boolean = frameCounter % 150 === 0;
-      this._encoder.encode(videoFrame, {keyFrame});
+      // First frame (0) must be a keyframe, then every 150 frames
+      const keyFrame: boolean = this.#frameCounter % 150 === 0;
+      this.#encoder.encode(videoFrame, {keyFrame});
       videoFrame.close();
+      this.#frameCounter++;
     }
   };
 
+  // make sure that all pending encoding requests have been completed, you can call flush() and wait for its promise
+  flush = async (): Promise<void> => {
+    if (!this.#encoder) return;
+
+    await this.#encoder.flush();
+  };
+
   // Usually this function would be sending data chunks over the network or muxing them into a media container for storage.
-  private handleChunk: EncodedVideoChunkOutputCallback = (
+  #handleChunk: EncodedVideoChunkOutputCallback = (
     chunk: EncodedVideoChunk,
     metadata?: EncodedVideoChunkMetadata
   ) => {
@@ -71,18 +79,17 @@ class Encoder {
     const chunkData: Uint8Array = new Uint8Array(chunk.byteLength);
     chunk.copyTo(chunkData);
 
-    this._encodedChunk = {
+    const encodedChunk: IEncodedChunk = {
       timestamp: chunk.timestamp,
       key: chunk.type === 'key',
       data: chunkData
     };
 
     // eslint-disable-next-line no-console
-    console.log('Encoded chunk', this._encodedChunk);
+    console.log('Encoded chunk', encodedChunk);
+
+    this.#onChunkCallback?.(encodedChunk);
   };
 }
 
 export default Encoder;
-
-// If at some point you'd need to make sure that all pending encoding requests have been completed, you can call flush() and wait for its promise.
-// await encoder.flush();

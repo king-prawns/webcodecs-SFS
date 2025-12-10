@@ -1,4 +1,4 @@
-const generate = (): Promise<VideoFrame | null> => {
+async function* generate(): AsyncGenerator<VideoFrame> {
   // eslint-disable-next-line no-console
   console.log('Generating frame from canvas');
 
@@ -6,7 +6,7 @@ const generate = (): Promise<VideoFrame | null> => {
   const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
 
   if (!ctx) {
-    return Promise.resolve(null);
+    return;
   }
 
   ctx.fillStyle = 'red';
@@ -14,7 +14,7 @@ const generate = (): Promise<VideoFrame | null> => {
 
   const videoFrame: VideoFrame = new VideoFrame(canvas, {timestamp: 0});
 
-  return Promise.resolve(videoFrame);
-};
+  yield videoFrame;
+}
 
 export default generate;

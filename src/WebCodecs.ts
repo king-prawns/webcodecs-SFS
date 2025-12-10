@@ -1,46 +1,40 @@
 import Decoder from '@decoder/decoder';
 import Encoder from '@encoder/encoder';
-import generateFromCanvas from '@generator/canvas';
+// import generate from '@generator/canvas';
+import generate from '@generator/camera';
+// import generate from '@generator/pixel';
 import IEncodedChunk from '@interfaces/IEncodedChunk';
 
 class WebCodecs {
-  public async do(): Promise<void> {
-    const encodedChunk: IEncodedChunk | null = await this.encode();
-    if (!encodedChunk) return;
-    await this.decode(encodedChunk);
-  }
+  #abortController: AbortController | null = null;
 
-  private async encode(): Promise<IEncodedChunk | null> {
+  start = async (): Promise<void> => {
     const encoder: Encoder = new Encoder();
-    await encoder.init();
+    const decoder: Decoder = new Decoder();
 
-    const videoFrame: VideoFrame | null = await generateFromCanvas();
-    if (videoFrame) {
+    await encoder.init();
+    await decoder.init();
+
+    this.#abortController = new AbortController();
+
+    // Whenever a chunk is ready, decode it
+    encoder.onChunk((chunk: IEncodedChunk) => {
+      decoder.decode(chunk);
+    });
+
+    // Encode all frames from generator
+    for await (const videoFrame of generate(this.#abortController.signal)) {
       encoder.encode(videoFrame);
     }
 
-    return new Promise((resolve: (value: IEncodedChunk | null) => void) => {
-      setTimeout(() => {
-        if (encoder.encodedChunk) {
-          // eslint-disable-next-line no-console
-          console.log('Encoded chunk available');
-          resolve(encoder.encodedChunk);
-        } else {
-          // eslint-disable-next-line no-console
-          console.log('No encoded chunk');
-          resolve(null);
-        }
-      }, 5000);
-    });
-  }
+    // Ensure all pending operations are completed
+    await encoder.flush();
+    await decoder.flush();
+  };
 
-  private async decode(encodedChunk: IEncodedChunk): Promise<void> {
-    const decoder: Decoder = new Decoder();
-    await decoder.init();
-    if (decoder) {
-      decoder.decode(encodedChunk);
-    }
-  }
+  stop = (): void => {
+    this.#abortController?.abort();
+  };
 }
 
 export default WebCodecs;

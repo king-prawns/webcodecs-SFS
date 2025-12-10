@@ -1,4 +1,4 @@
-const generate = (): Promise<VideoFrame | null> => {
+async function* generate(): AsyncGenerator<VideoFrame> {
   // eslint-disable-next-line no-console
   console.log('Generating frame from pixel');
 
@@ -23,7 +23,7 @@ const generate = (): Promise<VideoFrame | null> => {
 
   const videoFrame: VideoFrame = new VideoFrame(data, init);
 
-  return Promise.resolve(videoFrame);
-};
+  yield videoFrame;
+}
 
 export default generate;
