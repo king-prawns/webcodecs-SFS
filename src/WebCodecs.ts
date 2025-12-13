@@ -1,8 +1,9 @@
 import Decoder from '@decoder/decoder';
 import Encoder from '@encoder/encoder';
 // import generate from '@generator/canvas';
-import generate from '@generator/camera';
+// import generate from '@generator/camera';
 // import generate from '@generator/pixel';
+import generate from '@generator/video';
 import IEncodedChunk from '@interfaces/IEncodedChunk';
 
 class WebCodecs {
